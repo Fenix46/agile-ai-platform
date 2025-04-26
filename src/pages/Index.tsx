@@ -1,4 +1,3 @@
-
 /**
  * Pagina principale (landing page)
  * 
@@ -12,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import AuthForm from '../components/AuthForm';
 import ThemeToggle from '../components/ThemeToggle';
+import AnimatedMotto from '../components/AnimatedMotto';
 
 const Index = () => {
   return (
@@ -52,9 +52,7 @@ const Index = () => {
         <section className="py-16 md:py-24 px-6">
           <div className="container mx-auto grid md:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
-                Piattaforma AI <span className="gradient-heading">Intelligente</span> per Professionisti
-              </h1>
+              <AnimatedMotto />
               <p className="text-xl text-muted-foreground">
                 Accedi a potenti agenti AI personalizzati per migliorare la tua produttività e risolvere problemi complessi.
               </p>
