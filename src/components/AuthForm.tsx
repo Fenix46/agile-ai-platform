@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '../contexts/AuthContext';
 import { ButtonGoogle } from './ui/button-google';
+import { toast } from 'sonner';
 
 const AuthForm = () => {
   const { login, signup, isLoading } = useAuth();

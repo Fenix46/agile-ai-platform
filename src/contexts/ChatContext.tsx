@@ -1,4 +1,3 @@
-
 /**
  * Context per la gestione delle chat con gli agenti
  * 
@@ -122,7 +121,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   };
 
   // Invia un messaggio e gestisci la risposta
-  const sendMessage = async (content: string) => {
+  const sendMessage = async (content: string): Promise<void> => {
     if (!state.currentSession) {
       toast.error('Nessun agente selezionato');
       return;
@@ -226,8 +225,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         }
       );
 
-      // Cleanup function
-      return () => stopStream();
+      // Instead of returning the cleanup function directly, we'll just store it
+      setState(prev => ({ ...prev, cleanupStream: stopStream }));
+      
+      // Return void to match the expected return type
+      return;
     } catch (error) {
       setState(prev => ({ ...prev, isStreaming: false }));
       console.error('Error sending message:', error);
