@@ -9,7 +9,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import DashboardPage from "./pages/dashboard/DashboardPage";
-import PackagesPage from "./pages/dashboard/PackagesPage";
 import SettingsPage from "./pages/dashboard/SettingsPage";
 
 // Layouts
@@ -35,13 +34,7 @@ const App = () => (
               </DashboardLayout>
             } />
             
-            <Route path="/dashboard/packages" element={
-              <DashboardLayout>
-                <PackagesPage />
-              </DashboardLayout>
-            } />
-            
-            <Route path="/dashboard/settings" element={
+            <Route path="/dashboard/settings/*" element={
               <DashboardLayout>
                 <SettingsPage />
               </DashboardLayout>

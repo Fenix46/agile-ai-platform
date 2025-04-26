@@ -136,6 +136,17 @@ export const authAPI = {
     }
   },
   
+  googleAuth: async (): Promise<void> => {
+    try {
+      console.log('Initiating Google auth request');
+      // Redirect to Google OAuth endpoint
+      window.location.href = `${API_URL}/auth/google`;
+    } catch (error) {
+      console.error('Google auth error:', error);
+      throw error;
+    }
+  },
+  
   logout: (): void => {
     removeToken();
   },
@@ -223,7 +234,8 @@ export const agentsAPI = {
       }));
     } catch (error) {
       console.error('Get agents API error:', error);
-      throw error;
+      // Return empty list in case of error to prevent app crash
+      return [];
     }
   },
 };
@@ -233,7 +245,7 @@ export const chatAPI = {
   getSessions: async (): Promise<ChatSession[]> => {
     try {
       console.log('Fetching chat sessions');
-      // You might need to adjust this endpoint based on your FastAPI implementation
+      // Utilizziamo l'endpoint corretto basato sull'API Python
       const data = await fetchAPI('/chat');
       console.log('Chat sessions data:', data);
       
@@ -254,6 +266,7 @@ export const chatAPI = {
   createSession: async (agentId: string): Promise<ChatSession> => {
     try {
       console.log(`Creating session for agent ${agentId}`);
+      // Usiamo l'endpoint chat/{agent_slug} come specificato nell'API Python
       const data = await fetchAPI(`/chat/${agentId}`, {
         method: 'GET',
       });
@@ -282,10 +295,10 @@ export const chatAPI = {
   
   sendMessage: async (sessionId: string, message: string): Promise<Message> => {
     try {
-      console.log(`Sending message to session ${sessionId}`);
-      // Extract agent_slug from sessionId if needed
-      const agentSlug = sessionId.split('-')[0]; // Adjust based on your session ID format
+      // Estraiamo l'agent_slug dall'ID della sessione
+      const agentSlug = sessionId.split('-')[0]; // Se necessario adattare al formato dell'ID di sessione
       
+      console.log(`Sending message to agent ${agentSlug}`);
       const data = await fetchAPI(`/chat/${agentSlug}`, {
         method: 'POST',
         body: JSON.stringify({ content: message }),
@@ -307,8 +320,8 @@ export const chatAPI = {
   
   // Implement streaming if your FastAPI supports it
   streamMessage: (sessionId: string, message: string, onChunk: (chunk: string) => void, onComplete: (message: Message) => void) => {
-    // Extract agent_slug from sessionId if needed for streaming
-    const agentSlug = sessionId.split('-')[0]; // Adjust based on your session ID format
+    // Estraiamo l'agent_slug dall'ID della sessione
+    const agentSlug = sessionId.split('-')[0]; // Se necessario adattare al formato dell'ID di sessione
     
     console.log(`Setting up streaming for agent ${agentSlug} with message: ${message}`);
     
@@ -348,48 +361,7 @@ export const chatAPI = {
       }
     };
     
-    // If you implement SSE on your FastAPI, use this
-    try {
-      const token = getToken();
-      const endpoint = `${API_URL}/chat/${agentSlug}/stream`;
-      console.log(`Attempting to connect to SSE endpoint: ${endpoint}`);
-      
-      // For now, always use non-streaming as fallback
-      return sendNonStreaming();
-      
-      /* Uncomment when you implement streaming on the backend
-      const eventSource = new EventSource(
-        `${endpoint}?token=${token}&message=${encodeURIComponent(message)}`
-      );
-      
-      eventSource.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          
-          if (data.type === 'chunk') {
-            onChunk(data.content);
-          } else if (data.type === 'complete') {
-            onComplete(data.message);
-            eventSource.close();
-          }
-        } catch (error) {
-          console.error('SSE message parsing error:', error);
-        }
-      };
-      
-      eventSource.onerror = (error) => {
-        console.error('SSE Error:', error);
-        eventSource.close();
-        
-        // Fallback to non-streaming
-        return sendNonStreaming();
-      };
-      
-      return () => eventSource.close();
-      */
-    } catch (error) {
-      console.error('Stream setup error:', error);
-      return sendNonStreaming();
-    }
+    // Per ora utilizziamo solo la versione non-streaming come fallback
+    return sendNonStreaming();
   },
 };

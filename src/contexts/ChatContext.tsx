@@ -1,3 +1,4 @@
+
 /**
  * Context per la gestione delle chat con gli agenti
  * 
@@ -18,6 +19,7 @@ const initialChatState: ChatState = {
   currentSession: null,
   isStreaming: false,
   error: null,
+  cleanupStream: null,
 };
 
 // Creazione del context
@@ -46,6 +48,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       try {
         setLoadingAgents(true);
         const fetchedAgents = await agentsAPI.getAgents();
+        console.log('Agenti caricati:', fetchedAgents);
         setAgents(fetchedAgents);
       } catch (error) {
         console.error('Error fetching agents:', error);
@@ -65,6 +68,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       
       try {
         const sessions = await chatAPI.getSessions();
+        console.log('Sessioni caricate:', sessions);
         const sessionsMap: Record<string, ChatSession> = {};
         
         sessions.forEach(session => {
@@ -225,11 +229,14 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         }
       );
 
-      // Instead of returning the cleanup function directly, we'll just store it
-      setState(prev => ({ ...prev, cleanupStream: stopStream }));
-      
-      // Return void to match the expected return type
-      return;
+      // Salva la funzione di pulizia nel contesto
+      const cleanup = await stopStream;
+      setState(prev => ({ 
+        ...prev, 
+        cleanupStream: () => {
+          if (cleanup) cleanup();
+        } 
+      }));
     } catch (error) {
       setState(prev => ({ ...prev, isStreaming: false }));
       console.error('Error sending message:', error);

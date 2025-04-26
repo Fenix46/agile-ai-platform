@@ -6,21 +6,23 @@
  */
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { ChevronLeft, ChevronRight, Home, Package, Settings, LogOut } from 'lucide-react';
+import { ChevronLeft, ChevronRight, LayoutDashboard, Settings, LogOut } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import AgentList from './AgentList';
 import { useAuth } from '../contexts/AuthContext';
-import { usePackage } from '../contexts/PackageContext';
 
 const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const { user, logout } = useAuth();
-  const { packages, currentPackageId } = usePackage();
+  const location = useLocation();
   
-  const currentPackage = packages.find(pkg => pkg.id === currentPackageId);
+  // Funzione per verificare se un percorso è attivo
+  const isActive = (path: string) => {
+    return location.pathname === path;
+  };
   
   return (
     <div
@@ -57,7 +59,7 @@ const Sidebar = () => {
             </div>
             <div className="space-y-0.5">
               <p className="text-sm font-medium line-clamp-1">{user?.name}</p>
-              <p className="text-xs text-muted-foreground">{currentPackage?.name || 'Free'}</p>
+              <p className="text-xs text-muted-foreground">{user?.subscriptionId || 'Free'}</p>
             </div>
           </div>
         </div>
@@ -72,7 +74,7 @@ const Sidebar = () => {
           <div className="py-4 flex flex-col items-center space-y-4">
             {/* Versione compatta della lista agenti */}
             <Button variant="ghost" size="icon">
-              <Home className="h-5 w-5" />
+              <LayoutDashboard className="h-5 w-5" />
             </Button>
           </div>
         )}
@@ -81,28 +83,19 @@ const Sidebar = () => {
       <Separator />
       
       <nav className="p-2">
-        <div className={`flex ${collapsed ? 'flex-col items-center' : ''} space-y-1`}>
+        <div className={`flex flex-col ${collapsed ? 'items-center' : ''} space-y-1`}>
           <Link to="/dashboard">
             <Button
-              variant="ghost"
+              variant={isActive("/dashboard") ? "secondary" : "ghost"}
               className={`w-full justify-start ${collapsed ? 'px-2' : ''}`}
             >
-              <Home className="h-5 w-5 mr-2" />
+              <LayoutDashboard className="h-5 w-5 mr-2" />
               {!collapsed && <span>Dashboard</span>}
-            </Button>
-          </Link>
-          <Link to="/dashboard/packages">
-            <Button
-              variant="ghost"
-              className={`w-full justify-start ${collapsed ? 'px-2' : ''}`}
-            >
-              <Package className="h-5 w-5 mr-2" />
-              {!collapsed && <span>Pacchetti</span>}
             </Button>
           </Link>
           <Link to="/dashboard/settings">
             <Button
-              variant="ghost"
+              variant={isActive("/dashboard/settings") ? "secondary" : "ghost"}
               className={`w-full justify-start ${collapsed ? 'px-2' : ''}`}
             >
               <Settings className="h-5 w-5 mr-2" />

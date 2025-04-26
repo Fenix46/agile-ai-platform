@@ -76,5 +76,5 @@ export interface ChatState {
   currentSession: string | null;
   isStreaming: boolean;
   error: string | null;
-  cleanupStream?: () => void;
+  cleanupStream: (() => void) | null;
 }
