@@ -1,4 +1,3 @@
-
 /**
  * Componente per la gestione dell'autenticazione
  * 
@@ -12,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '../contexts/AuthContext';
+import { ButtonGoogle } from './ui/button-google';
 
 const AuthForm = () => {
   const { login, signup, isLoading } = useAuth();
@@ -142,6 +142,27 @@ const AuthForm = () => {
     }
   };
   
+  // Nuovo handler per Google OAuth
+  const handleGoogleLogin = async () => {
+    try {
+      // In attesa della configurazione del backend
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/google`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        window.location.href = data.authUrl;
+      } else {
+        toast.error('Errore durante l\'accesso con Google');
+      }
+    } catch (error) {
+      console.error('Google login error:', error);
+      toast.error('Errore durante l\'accesso con Google');
+    }
+  };
+  
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
@@ -162,8 +183,21 @@ const AuthForm = () => {
           </TabsList>
           
           <TabsContent value="login">
-            <form onSubmit={handleLoginSubmit}>
-              <div className="space-y-4">
+            <div className="space-y-4">
+              <ButtonGoogle onClick={handleGoogleLogin} />
+              
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    oppure continua con
+                  </span>
+                </div>
+              </div>
+              
+              <form onSubmit={handleLoginSubmit}>
                 <div className="space-y-2">
                   <label htmlFor="email" className="text-sm font-medium">
                     Email
@@ -208,13 +242,26 @@ const AuthForm = () => {
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? 'Accesso...' : 'Accedi'}
                 </Button>
-              </div>
-            </form>
+              </form>
+            </div>
           </TabsContent>
           
           <TabsContent value="signup">
-            <form onSubmit={handleSignupSubmit}>
-              <div className="space-y-4">
+            <div className="space-y-4">
+              <ButtonGoogle onClick={handleGoogleLogin} />
+              
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    oppure registrati con
+                  </span>
+                </div>
+              </div>
+              
+              <form onSubmit={handleSignupSubmit}>
                 <div className="space-y-2">
                   <label htmlFor="name" className="text-sm font-medium">
                     Nome completo
@@ -290,8 +337,8 @@ const AuthForm = () => {
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? 'Registrazione...' : 'Registrati'}
                 </Button>
-              </div>
-            </form>
+              </form>
+            </div>
           </TabsContent>
         </Tabs>
       </CardContent>

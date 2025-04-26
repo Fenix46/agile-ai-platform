@@ -1,4 +1,3 @@
-
 // Tipi di utente
 export type UserRole = 'user' | 'admin';
 
@@ -77,4 +76,5 @@ export interface ChatState {
   currentSession: string | null;
   isStreaming: boolean;
   error: string | null;
+  cleanupStream?: () => void;
 }
