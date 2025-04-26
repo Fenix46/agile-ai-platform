@@ -4,8 +4,6 @@
  * 
  * Questo modulo gestisce tutte le chiamate al backend, inclusa l'autenticazione,
  * il recupero di dati e l'invio di richieste di chat.
- * 
- * Nella versione frontend standalone, le API sono mockate.
  */
 
 import { 
@@ -13,8 +11,8 @@ import {
   Package, Agent, Message, ChatSession 
 } from '../types';
 
-// Base URL dell'API (in produzione sarebbe un vero endpoint)
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+// Base URL dell'API
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 // Salvataggio e recupero del token JWT da localStorage
 const getToken = () => localStorage.getItem('auth_token');
@@ -31,16 +29,30 @@ const getAuthHeaders = () => {
 };
 
 // Funzione generica per le chiamate fetch
-const fetchAPI = async (endpoint: string, options = {}) => {
+const fetchAPI = async (endpoint: string, options: RequestInit = {}) => {
   try {
+    console.log(`API Request: ${API_URL}${endpoint}`, options);
+    
     const response = await fetch(`${API_URL}${endpoint}`, {
       ...options,
-      headers: getAuthHeaders(),
+      headers: {
+        ...getAuthHeaders(),
+        ...(options.headers || {}),
+      },
     });
 
+    console.log(`API Response status: ${response.status} for ${endpoint}`);
+    
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Si è verificato un errore');
+      let errorMessage = `Error ${response.status}: ${response.statusText}`;
+      try {
+        const errorData = await response.json();
+        console.error('API Error details:', errorData);
+        errorMessage = errorData.message || errorData.detail || errorMessage;
+      } catch (e) {
+        console.error('Could not parse error response as JSON');
+      }
+      throw new Error(errorMessage);
     }
 
     return await response.json();
@@ -53,73 +65,75 @@ const fetchAPI = async (endpoint: string, options = {}) => {
 // API per autenticazione
 export const authAPI = {
   login: async (credentials: LoginCredentials): Promise<{ user: User; token: string }> => {
-    // Mock API response per frontend standalone
-    if (!import.meta.env.VITE_API_URL) {
-      // Simula un breve delay
-      await new Promise(resolve => setTimeout(resolve, 800));
+    try {
+      console.log('Sending login request to /auth/login');
+      const data = await fetchAPI('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify(credentials),
+      });
       
-      // Mock risposta
-      const mockUser = {
-        id: '1',
-        name: 'Utente Demo',
-        email: credentials.email,
-        role: 'user' as const,
-        avatar: 'https://avatars.githubusercontent.com/u/1',
-        subscriptionId: 'free',
-      };
+      console.log('Login response received:', data);
       
-      const mockToken = 'mock-jwt-token-' + Math.random();
-      saveToken(mockToken);
-      
-      return { user: mockUser, token: mockToken };
+      if (data.access_token) {
+        // FastAPI standard response structure
+        saveToken(data.access_token);
+        return { 
+          user: data.user || { 
+            id: '1', 
+            name: credentials.email.split('@')[0], 
+            email: credentials.email,
+            role: 'user',
+            subscriptionId: data.subscription_id || 'free'
+          },
+          token: data.access_token
+        };
+      } else if (data.token) {
+        // Alternative response structure
+        saveToken(data.token);
+        return data;
+      } else {
+        throw new Error('Token not found in response');
+      }
+    } catch (error) {
+      console.error('Login API error:', error);
+      throw error;
     }
-    
-    // Implementazione reale
-    const data = await fetchAPI('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify(credentials),
-    });
-    
-    if (data.token) {
-      saveToken(data.token);
-    }
-    
-    return data;
   },
   
   signup: async (credentials: SignupCredentials): Promise<{ user: User; token: string }> => {
-    // Mock API response per frontend standalone
-    if (!import.meta.env.VITE_API_URL) {
-      // Simula un breve delay
-      await new Promise(resolve => setTimeout(resolve, 1200));
+    try {
+      console.log('Sending signup request to /auth/signup');
+      const data = await fetchAPI('/auth/signup', {
+        method: 'POST',
+        body: JSON.stringify(credentials),
+      });
       
-      // Mock risposta
-      const mockUser = {
-        id: '1',
-        name: credentials.name,
-        email: credentials.email,
-        role: 'user' as const,
-        avatar: 'https://avatars.githubusercontent.com/u/1',
-        subscriptionId: 'free',
-      };
+      console.log('Signup response received:', data);
       
-      const mockToken = 'mock-jwt-token-' + Math.random();
-      saveToken(mockToken);
-      
-      return { user: mockUser, token: mockToken };
+      if (data.access_token) {
+        // FastAPI standard response structure
+        saveToken(data.access_token);
+        return { 
+          user: data.user || { 
+            id: '1', 
+            name: credentials.name, 
+            email: credentials.email,
+            role: 'user',
+            subscriptionId: 'free'
+          },
+          token: data.access_token 
+        };
+      } else if (data.token) {
+        // Alternative response structure
+        saveToken(data.token);
+        return data;
+      } else {
+        throw new Error('Token not found in response');
+      }
+    } catch (error) {
+      console.error('Signup API error:', error);
+      throw error;
     }
-    
-    // Implementazione reale
-    const data = await fetchAPI('/auth/signup', {
-      method: 'POST',
-      body: JSON.stringify(credentials),
-    });
-    
-    if (data.token) {
-      saveToken(data.token);
-    }
-    
-    return data;
   },
   
   logout: (): void => {
@@ -127,176 +141,135 @@ export const authAPI = {
   },
   
   getCurrentUser: async (): Promise<User> => {
-    // Mock API response per frontend standalone
-    if (!import.meta.env.VITE_API_URL) {
-      // Verifica se c'è un token salvato
-      const token = getToken();
-      if (!token) throw new Error('Nessun utente autenticato');
+    try {
+      console.log('Fetching current user from /auth/me');
+      const data = await fetchAPI('/auth/me');
+      console.log('Current user data:', data);
       
-      // Mock risposta
+      // Transform the FastAPI response to match our User type if needed
       return {
-        id: '1',
-        name: 'Utente Demo',
-        email: 'demo@example.com',
-        role: 'user' as const,
-        avatar: 'https://avatars.githubusercontent.com/u/1',
-        subscriptionId: 'free',
+        id: data.id,
+        name: data.name || data.full_name || data.email.split('@')[0],
+        email: data.email,
+        role: data.role || 'user',
+        subscriptionId: data.subscription_id || data.subscriptionId || 'free',
+        avatar: data.avatar,
       };
+    } catch (error) {
+      console.error('Get current user API error:', error);
+      throw error;
     }
-    
-    // Implementazione reale
-    return fetchAPI('/auth/me');
   },
 };
 
 // API per i pacchetti
 export const packagesAPI = {
   getPackages: async (): Promise<Package[]> => {
-    // Mock API response per frontend standalone
-    if (!import.meta.env.VITE_API_URL) {
-      // Simula un breve delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+      console.log('Fetching packages from /packages');
+      const data = await fetchAPI('/packages');
+      console.log('Packages data:', data);
       
-      // Mock risposta
-      return [
-        {
-          id: 'free',
-          name: 'Free',
-          description: 'Piano base per provare la piattaforma',
-          price: 0,
-          features: ['Accesso agli agenti base', 'Max 50 messaggi/giorno', 'Supporto community'],
-          maxAgents: 2,
-          maxMessages: 50,
-        },
-        {
-          id: 'pro',
-          name: 'Pro',
-          description: 'Per professionisti che richiedono più potenza',
-          price: 9.99,
-          features: ['Accesso a tutti gli agenti', 'Messaggi illimitati', 'Supporto prioritario', 'API personalizzata'],
-          isPopular: true,
-          maxAgents: 10,
-          maxMessages: 1000,
-        },
-        {
-          id: 'enterprise',
-          name: 'Enterprise',
-          description: 'Soluzione completa per aziende',
-          price: 49.99,
-          features: ['Agenti personalizzabili', 'Messaggi illimitati', 'Supporto dedicato 24/7', 'Integrazione completa', 'Analisi avanzate'],
-          maxAgents: -1, // Unlimited
-          maxMessages: -1, // Unlimited
-        },
-      ];
+      // Transform the FastAPI response to match our Package type if needed
+      return data.map((pkg: any) => ({
+        id: pkg.id,
+        name: pkg.name,
+        description: pkg.description,
+        price: pkg.price,
+        features: pkg.features,
+        maxAgents: pkg.max_agents || pkg.maxAgents,
+        maxMessages: pkg.max_messages || pkg.maxMessages,
+        isPopular: pkg.is_popular || pkg.isPopular || false,
+      }));
+    } catch (error) {
+      console.error('Get packages API error:', error);
+      throw error;
     }
-    
-    // Implementazione reale
-    return fetchAPI('/packages');
   },
   
   subscribe: async (packageId: string): Promise<{ success: boolean }> => {
-    // Mock API response per frontend standalone
-    if (!import.meta.env.VITE_API_URL) {
-      // Simula un breve delay
-      await new Promise(resolve => setTimeout(resolve, 800));
+    try {
+      console.log(`Subscribing to package ${packageId}`);
+      const data = await fetchAPI(`/subscribe/${packageId}`, {
+        method: 'POST',
+      });
+      console.log('Subscribe response:', data);
       
-      // Mock risposta
       return { success: true };
+    } catch (error) {
+      console.error('Subscribe API error:', error);
+      throw error;
     }
-    
-    // Implementazione reale
-    return fetchAPI(`/subscribe/${packageId}`, {
-      method: 'POST',
-    });
   },
 };
 
 // API per gli agenti
 export const agentsAPI = {
   getAgents: async (): Promise<Agent[]> => {
-    // Mock API response per frontend standalone
-    if (!import.meta.env.VITE_API_URL) {
-      // Simula un breve delay
-      await new Promise(resolve => setTimeout(resolve, 700));
+    try {
+      console.log('Fetching agents from /agents');
+      const data = await fetchAPI('/agents');
+      console.log('Agents data:', data);
       
-      // Mock risposta
-      return [
-        {
-          id: '1',
-          slug: 'echo',
-          name: 'Echo Agent',
-          description: 'Agente base che risponde rispecchiando il messaggio',
-          icon: 'repeat',
-          isAvailable: true,
-          requiredPackage: 'free',
-        },
-        {
-          id: '2',
-          slug: 'translator',
-          name: 'Traduttore',
-          description: 'Traduce il testo in varie lingue',
-          icon: 'languages',
-          isAvailable: true,
-          requiredPackage: 'free',
-        },
-        {
-          id: '3',
-          slug: 'writer',
-          name: 'Scrittore',
-          description: 'Assiste nella creazione di contenuti testuali',
-          icon: 'pencil',
-          isAvailable: true,
-          requiredPackage: 'pro',
-        },
-        {
-          id: '4',
-          slug: 'code',
-          name: 'Sviluppatore',
-          description: 'Aiuta con problemi di codice e programmazione',
-          icon: 'code',
-          isAvailable: true,
-          requiredPackage: 'pro',
-        },
-        {
-          id: '5',
-          slug: 'custom',
-          name: 'Personalizzato',
-          description: 'Agente completamente personalizzabile',
-          icon: 'settings',
-          isAvailable: true,
-          requiredPackage: 'enterprise',
-        },
-      ];
+      // Transform the FastAPI response to match our Agent type if needed
+      return data.map((agent: any) => ({
+        id: agent.id || agent.slug,
+        slug: agent.slug,
+        name: agent.name,
+        description: agent.description,
+        icon: agent.icon || 'message-square',
+        isAvailable: agent.is_available || agent.isAvailable || true,
+        requiredPackage: agent.required_package || agent.requiredPackage || 'free',
+      }));
+    } catch (error) {
+      console.error('Get agents API error:', error);
+      throw error;
     }
-    
-    // Implementazione reale
-    return fetchAPI('/agents');
   },
 };
 
 // API per la chat
 export const chatAPI = {
   getSessions: async (): Promise<ChatSession[]> => {
-    // Mock API response per frontend standalone
-    if (!import.meta.env.VITE_API_URL) {
-      // Simula un breve delay
-      await new Promise(resolve => setTimeout(resolve, 600));
+    try {
+      console.log('Fetching chat sessions');
+      // You might need to adjust this endpoint based on your FastAPI implementation
+      const data = await fetchAPI('/chat');
+      console.log('Chat sessions data:', data);
       
-      // Mock risposta - nessuna sessione iniziale
+      return data.map((session: any) => ({
+        id: session.id,
+        agentId: session.agent_id || session.agentId,
+        messages: session.messages || [],
+        createdAt: new Date(session.created_at || session.createdAt),
+        updatedAt: new Date(session.updated_at || session.updatedAt),
+      }));
+    } catch (error) {
+      console.error('Get sessions API error:', error);
+      // Return empty sessions if endpoint not implemented yet
       return [];
     }
-    
-    // Implementazione reale
-    return fetchAPI('/chat/sessions');
   },
   
   createSession: async (agentId: string): Promise<ChatSession> => {
-    // Mock API response per frontend standalone
-    if (!import.meta.env.VITE_API_URL) {
-      // Simula un breve delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+      console.log(`Creating session for agent ${agentId}`);
+      const data = await fetchAPI(`/chat/${agentId}`, {
+        method: 'GET',
+      });
+      console.log('Create session response:', data);
       
-      // Mock risposta
+      // Transform the response to match our ChatSession type
+      return {
+        id: data.id || `session-${Math.random().toString(36).substring(2, 9)}`,
+        agentId,
+        messages: data.messages || [],
+        createdAt: new Date(data.created_at || data.createdAt || Date.now()),
+        updatedAt: new Date(data.updated_at || data.updatedAt || Date.now()),
+      };
+    } catch (error) {
+      console.error('Create session API error:', error);
+      // Fallback to create a local session
       return {
         id: `session-${Math.random().toString(36).substring(2, 9)}`,
         agentId,
@@ -305,104 +278,118 @@ export const chatAPI = {
         updatedAt: new Date(),
       };
     }
-    
-    // Implementazione reale
-    return fetchAPI('/chat/sessions', {
-      method: 'POST',
-      body: JSON.stringify({ agentId }),
-    });
   },
   
   sendMessage: async (sessionId: string, message: string): Promise<Message> => {
-    // Mock API response per frontend standalone
-    if (!import.meta.env.VITE_API_URL) {
-      // Simula un breve delay
-      await new Promise(resolve => setTimeout(resolve, 700));
+    try {
+      console.log(`Sending message to session ${sessionId}`);
+      // Extract agent_slug from sessionId if needed
+      const agentSlug = sessionId.split('-')[0]; // Adjust based on your session ID format
       
-      // Mock risposta
-      const mockMessage: Message = {
-        id: `message-${Math.random().toString(36).substring(2, 9)}`,
+      const data = await fetchAPI(`/chat/${agentSlug}`, {
+        method: 'POST',
+        body: JSON.stringify({ content: message }),
+      });
+      console.log('Send message response:', data);
+      
+      // Transform the response to match our Message type
+      return {
+        id: data.id || `message-${Math.random().toString(36).substring(2, 9)}`,
         role: 'agent',
-        content: `Risposta simulata all'input: "${message}"`,
-        timestamp: new Date(),
+        content: data.content || data.message || `Risposta dal server per: "${message}"`,
+        timestamp: new Date(data.timestamp || data.created_at || Date.now()),
       };
-      
-      return mockMessage;
+    } catch (error) {
+      console.error('Send message API error:', error);
+      throw error;
     }
-    
-    // Implementazione reale
-    return fetchAPI(`/chat/${sessionId}/messages`, {
-      method: 'POST',
-      body: JSON.stringify({ content: message }),
-    });
   },
   
-  // Implementazione per lo streaming (SSE)
+  // Implement streaming if your FastAPI supports it
   streamMessage: (sessionId: string, message: string, onChunk: (chunk: string) => void, onComplete: (message: Message) => void) => {
-    // Mock streaming response per frontend standalone
-    if (!import.meta.env.VITE_API_URL) {
-      const mockResponse = `Questa è una risposta di streaming simulata per il messaggio: "${message}". La risposta viene inviata parola per parola come farebbe un vero stream SSE.`;
-      const words = mockResponse.split(' ');
-      
-      let index = 0;
-      const interval = setInterval(() => {
-        if (index >= words.length) {
-          clearInterval(interval);
-          
-          // Chiamata di completamento
-          onComplete({
-            id: `message-${Math.random().toString(36).substring(2, 9)}`,
-            role: 'agent',
-            content: mockResponse,
-            timestamp: new Date(),
-          });
-          return;
-        }
+    // Extract agent_slug from sessionId if needed for streaming
+    const agentSlug = sessionId.split('-')[0]; // Adjust based on your session ID format
+    
+    console.log(`Setting up streaming for agent ${agentSlug} with message: ${message}`);
+    
+    // For now, fallback to non-streaming response
+    const sendNonStreaming = async () => {
+      try {
+        const response = await chatAPI.sendMessage(sessionId, message);
         
-        // Invia chunk
-        onChunk(words[index] + ' ');
-        index++;
-      }, 150);
-      
-      // Ritorna una funzione per fermare lo stream se necessario
-      return () => clearInterval(interval);
-    }
+        // Simulate streaming with the complete response
+        const words = response.content.split(' ');
+        
+        let accumulatedContent = '';
+        let index = 0;
+        
+        const interval = setInterval(() => {
+          if (index >= words.length) {
+            clearInterval(interval);
+            onComplete(response);
+            return;
+          }
+          
+          accumulatedContent += words[index] + ' ';
+          onChunk(words[index] + ' ');
+          index++;
+        }, 100);
+        
+        return () => clearInterval(interval);
+      } catch (error) {
+        console.error('Non-streaming fallback error:', error);
+        onComplete({
+          id: `message-error-${Date.now()}`,
+          role: 'agent',
+          content: 'Si è verificato un errore durante l\'elaborazione del messaggio',
+          timestamp: new Date(),
+        });
+        return () => {};
+      }
+    };
     
-    // Implementazione reale con EventSource (Server-Sent Events)
-    let eventSource: EventSource | null = null;
-    
+    // If you implement SSE on your FastAPI, use this
     try {
       const token = getToken();
-      eventSource = new EventSource(
-        `${API_URL}/chat/${sessionId}/stream?token=${token}&message=${encodeURIComponent(message)}`
+      const endpoint = `${API_URL}/chat/${agentSlug}/stream`;
+      console.log(`Attempting to connect to SSE endpoint: ${endpoint}`);
+      
+      // For now, always use non-streaming as fallback
+      return sendNonStreaming();
+      
+      /* Uncomment when you implement streaming on the backend
+      const eventSource = new EventSource(
+        `${endpoint}?token=${token}&message=${encodeURIComponent(message)}`
       );
       
       eventSource.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        
-        if (data.type === 'chunk') {
-          onChunk(data.content);
-        } else if (data.type === 'complete') {
-          onComplete(data.message);
-          eventSource?.close();
+        try {
+          const data = JSON.parse(event.data);
+          
+          if (data.type === 'chunk') {
+            onChunk(data.content);
+          } else if (data.type === 'complete') {
+            onComplete(data.message);
+            eventSource.close();
+          }
+        } catch (error) {
+          console.error('SSE message parsing error:', error);
         }
       };
       
-      eventSource.onerror = () => {
-        console.error('SSE Error');
-        eventSource?.close();
+      eventSource.onerror = (error) => {
+        console.error('SSE Error:', error);
+        eventSource.close();
         
-        // Fallback a chiamata non-streaming in caso di errore
-        chatAPI.sendMessage(sessionId, message).then(onComplete);
+        // Fallback to non-streaming
+        return sendNonStreaming();
       };
+      
+      return () => eventSource.close();
+      */
     } catch (error) {
       console.error('Stream setup error:', error);
-      
-      // Fallback a chiamata non-streaming
-      chatAPI.sendMessage(sessionId, message).then(onComplete);
+      return sendNonStreaming();
     }
-    
-    // Ritorna funzione per fermare stream
-    return () => eventSource?.close();
   },
 };

@@ -6,18 +6,28 @@
  * implementa la protezione delle rotte autenticate.
  */
 
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ChatProvider } from '../contexts/ChatContext';
 import { PackageProvider } from '../contexts/PackageContext';
+import { toast } from 'sonner';
 
 interface DashboardLayoutProps {
   children: ReactNode;
 }
 
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
+  
+  // Debug output
+  useEffect(() => {
+    console.log('Dashboard Layout:', { isAuthenticated, isLoading, user });
+    
+    if (isAuthenticated && user) {
+      toast.success(`Dashboard caricata per ${user.name}`);
+    }
+  }, [isAuthenticated, isLoading, user]);
   
   // Se sta caricando, mostra un indicatore di caricamento
   if (isLoading) {
@@ -33,10 +43,12 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   
   // Se non è autenticato, reindirizza alla landing page
   if (!isAuthenticated) {
+    console.log('User not authenticated, redirecting to landing page');
     return <Navigate to="/" replace />;
   }
   
   // Se è autenticato, mostra il contenuto della dashboard all'interno dei provider necessari
+  console.log('Rendering dashboard for authenticated user');
   return (
     <ChatProvider>
       <PackageProvider>
