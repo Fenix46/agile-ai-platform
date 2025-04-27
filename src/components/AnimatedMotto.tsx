@@ -30,8 +30,8 @@ const AnimatedMotto = () => {
   }, []);
 
   return (
-    <div className="h-20 flex items-center justify-center">
-      <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight animate-fade-in">
+    <div className="h-16 flex items-center justify-center">
+      <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold leading-tight animate-fade-in bg-gradient-to-r from-youai-purple via-youai-blue to-youai-cyan bg-clip-text text-transparent">
         {mottos[currentIndex].text}
       </h1>
     </div>

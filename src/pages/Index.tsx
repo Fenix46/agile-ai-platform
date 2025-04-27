@@ -8,7 +8,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import AuthForm from '../components/AuthForm';
 import ThemeToggle from '../components/ThemeToggle';
 import AnimatedMotto from '../components/AnimatedMotto';
@@ -20,28 +19,32 @@ const Index = () => {
       <header className="border-b py-4 px-6">
         <div className="container mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-8">
-            <h1 className="text-2xl font-bold gradient-heading">AI Platform</h1>
+            <Link to="/" className="flex items-center space-x-2">
+              <img 
+                src="/lovable-uploads/416df129-3707-46b0-8e0b-c4102ac15a2b.png" 
+                alt="YouAI Suite Logo" 
+                className="h-10 w-auto"
+              />
+              <span className="text-xl font-bold bg-gradient-to-r from-youai-purple via-youai-blue to-youai-cyan bg-clip-text text-transparent">
+                YouAI Suite
+              </span>
+            </Link>
             <nav className="hidden md:flex items-center space-x-6">
               <Link to="#features" className="text-sm font-medium hover:text-primary transition-colors">
-                Funzionalità
-              </Link>
-              <Link to="#pricing" className="text-sm font-medium hover:text-primary transition-colors">
-                Prezzi
+                Features
               </Link>
               <Link to="#about" className="text-sm font-medium hover:text-primary transition-colors">
-                Chi siamo
+                About
               </Link>
             </nav>
           </div>
           <div className="flex items-center space-x-4">
             <ThemeToggle />
-            <div className="hidden md:block">
-              <Link to="/dashboard">
-                <Button variant="outline">Accedi</Button>
-              </Link>
-            </div>
             <Link to="/dashboard">
-              <Button>Inizia gratis</Button>
+              <Button variant="outline">Login</Button>
+            </Link>
+            <Link to="/dashboard">
+              <Button>Get Started</Button>
             </Link>
           </div>
         </div>
@@ -51,17 +54,21 @@ const Index = () => {
         {/* Hero section */}
         <section className="py-16 md:py-24 px-6">
           <div className="container mx-auto grid md:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8">
+            <div className="space-y-6">
               <AnimatedMotto />
-              <p className="text-xl text-muted-foreground">
-                Accedi a potenti agenti AI personalizzati per migliorare la tua produttività e risolvere problemi complessi.
+              <p className="text-lg text-muted-foreground">
+                Access powerful AI agents tailored to your needs to enhance productivity and solve complex problems.
               </p>
               <div className="flex flex-wrap gap-4">
                 <Link to="/dashboard">
-                  <Button size="lg">Inizia gratuitamente</Button>
+                  <Button size="lg" className="bg-gradient-to-r from-youai-purple to-youai-blue hover:opacity-90">
+                    Get Started Free
+                  </Button>
                 </Link>
                 <Link to="#features">
-                  <Button variant="outline" size="lg">Scopri di più</Button>
+                  <Button variant="outline" size="lg">
+                    Learn More
+                  </Button>
                 </Link>
               </div>
             </div>
@@ -74,7 +81,7 @@ const Index = () => {
         {/* Features section */}
         <section id="features" className="py-16 bg-secondary/50 px-6">
           <div className="container mx-auto">
-            <h2 className="text-3xl font-bold text-center mb-12">Funzionalità principali</h2>
+            <h2 className="text-3xl font-bold text-center mb-12">Features</h2>
             <div className="grid md:grid-cols-3 gap-8">
               <Card>
                 <CardHeader>
@@ -107,130 +114,10 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Pricing section */}
-        <section id="pricing" className="py-16 px-6">
-          <div className="container mx-auto">
-            <h2 className="text-3xl font-bold text-center mb-4">Piani e prezzi</h2>
-            <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
-              Scegli il piano più adatto alle tue esigenze, da quello gratuito per i principianti fino alle soluzioni enterprise complete.
-            </p>
-            <div className="grid md:grid-cols-3 gap-8">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Free</CardTitle>
-                  <CardDescription>Per iniziare a esplorare</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="mb-4">
-                    <span className="text-3xl font-bold">€0</span>
-                    <span className="text-muted-foreground">/mese</span>
-                  </div>
-                  <ul className="space-y-2">
-                    <li className="flex items-start">
-                      <span className="text-primary mr-2">✓</span>
-                      Accesso agli agenti base
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-primary mr-2">✓</span>
-                      Max 50 messaggi/giorno
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-primary mr-2">✓</span>
-                      Supporto community
-                    </li>
-                  </ul>
-                </CardContent>
-                <CardFooter>
-                  <Link to="/dashboard" className="w-full">
-                    <Button variant="outline" className="w-full">Inizia gratis</Button>
-                  </Link>
-                </CardFooter>
-              </Card>
-              <Card className="border-primary/40 shadow-md">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>Pro</CardTitle>
-                    <span className="bg-primary text-primary-foreground text-xs py-1 px-2 rounded-md">Popolare</span>
-                  </div>
-                  <CardDescription>Per professionisti e piccoli team</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="mb-4">
-                    <span className="text-3xl font-bold">€9.99</span>
-                    <span className="text-muted-foreground">/mese</span>
-                  </div>
-                  <ul className="space-y-2">
-                    <li className="flex items-start">
-                      <span className="text-primary mr-2">✓</span>
-                      Accesso a tutti gli agenti
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-primary mr-2">✓</span>
-                      Messaggi illimitati
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-primary mr-2">✓</span>
-                      Supporto prioritario
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-primary mr-2">✓</span>
-                      API personalizzata
-                    </li>
-                  </ul>
-                </CardContent>
-                <CardFooter>
-                  <Link to="/dashboard/packages" className="w-full">
-                    <Button className="w-full">Abbonati ora</Button>
-                  </Link>
-                </CardFooter>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Enterprise</CardTitle>
-                  <CardDescription>Per aziende con esigenze avanzate</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="mb-4">
-                    <span className="text-3xl font-bold">€49.99</span>
-                    <span className="text-muted-foreground">/mese</span>
-                  </div>
-                  <ul className="space-y-2">
-                    <li className="flex items-start">
-                      <span className="text-primary mr-2">✓</span>
-                      Agenti personalizzabili
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-primary mr-2">✓</span>
-                      Messaggi illimitati
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-primary mr-2">✓</span>
-                      Supporto dedicato 24/7
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-primary mr-2">✓</span>
-                      Integrazione completa
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-primary mr-2">✓</span>
-                      Analisi avanzate
-                    </li>
-                  </ul>
-                </CardContent>
-                <CardFooter>
-                  <Link to="/dashboard/packages" className="w-full">
-                    <Button variant="outline" className="w-full">Contattaci</Button>
-                  </Link>
-                </CardFooter>
-              </Card>
-            </div>
-          </div>
-        </section>
-
         {/* About section */}
         <section id="about" className="py-16 bg-secondary/50 px-6">
           <div className="container mx-auto max-w-4xl">
-            <h2 className="text-3xl font-bold text-center mb-8">Chi siamo</h2>
+            <h2 className="text-3xl font-bold text-center mb-8">About</h2>
             <div className="prose prose-lg mx-auto">
               <p className="text-center mb-6">
                 Siamo un team di esperti in intelligenza artificiale dedicati a rendere la potenza dell'AI accessibile a tutti.
@@ -253,7 +140,7 @@ const Index = () => {
         <div className="container mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
-              <h3 className="text-lg font-semibold mb-4">AI Platform</h3>
+              <h3 className="text-lg font-semibold mb-4">YouAI Suite</h3>
               <p className="text-muted-foreground">
                 Strumenti AI intelligenti per aumentare la tua produttività e risolvere problemi complessi.
               </p>
@@ -263,17 +150,12 @@ const Index = () => {
               <ul className="space-y-2">
                 <li>
                   <Link to="#features" className="text-muted-foreground hover:text-primary transition-colors">
-                    Funzionalità
-                  </Link>
-                </li>
-                <li>
-                  <Link to="#pricing" className="text-muted-foreground hover:text-primary transition-colors">
-                    Prezzi
+                    Features
                   </Link>
                 </li>
                 <li>
                   <Link to="#about" className="text-muted-foreground hover:text-primary transition-colors">
-                    Chi siamo
+                    About
                   </Link>
                 </li>
               </ul>
