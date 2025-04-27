@@ -34,12 +34,12 @@ const PackageList = () => {
           return (
             <Card
               key={pkg.id}
-              className={`border ${
-                pkg.isPopular ? 'border-primary/40 shadow-md' : ''
-              } ${isActive ? 'ring-2 ring-primary' : ''}`}
+              className={`package-card ${
+                pkg.isPopular ? 'package-card-popular' : ''
+              } ${isActive ? 'ring-2 ring-accent' : ''}`}
             >
               {pkg.isPopular && (
-                <Badge className="absolute top-4 right-4">Popolare</Badge>
+                <Badge className="absolute top-4 right-4 bg-accent text-accent-foreground">Popolare</Badge>
               )}
               
               <CardHeader className="pb-2">
@@ -53,11 +53,11 @@ const PackageList = () => {
                   <span className="ml-1 text-muted-foreground">/mese</span>
                 </div>
                 
-                <ul className="space-y-2 mb-6">
+                <ul className="package-features-list">
                   {pkg.features.map((feature, index) => (
-                    <li key={index} className="flex items-center">
-                      <Check className="text-primary w-5 h-5 mr-2 flex-shrink-0" />
-                      <span className="text-sm">{feature}</span>
+                    <li key={index} className="package-feature-item">
+                      <Check className="text-accent w-5 h-5 mr-2 flex-shrink-0" />
+                      <span>{feature}</span>
                     </li>
                   ))}
                 </ul>

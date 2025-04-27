@@ -10,7 +10,8 @@ import {
   Settings, 
   LogOut,
   MessageSquare,
-  User
+  User,
+  Plus
 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import AgentList from './AgentList';
@@ -18,12 +19,13 @@ import { useAuth } from '../contexts/AuthContext';
 import { useChat } from '../contexts/ChatContext';
 import ConversationList from './ConversationList';
 import ThemeToggle from './ThemeToggle';
+import { toast } from 'sonner';
 
 const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const { user, logout } = useAuth();
   const location = useLocation();
-  const { agents, getCurrentSession } = useChat();
+  const { agents, getCurrentSession, selectAgent } = useChat();
   
   const currentSession = getCurrentSession();
   const selectedAgent = currentSession ? 
@@ -51,9 +53,22 @@ const Sidebar = () => {
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
   
+  // Funzione per creare una nuova chat con l'agente selezionato
+  const handleNewChat = async () => {
+    if (selectedAgent) {
+      try {
+        await selectAgent(selectedAgent.id);
+        toast.success(`Nuova chat con ${selectedAgent.name}`);
+      } catch (error) {
+        console.error("Error creating new chat:", error);
+        toast.error("Impossibile creare una nuova chat");
+      }
+    }
+  };
+  
   return (
     <div
-      className={`persistent-sidebar bg-sidebar border-r ${
+      className={`persistent-sidebar border-r bg-sidebar ${
         collapsed ? 'w-16' : 'w-64'
       }`}
     >
@@ -78,28 +93,32 @@ const Sidebar = () => {
         </Button>
       </div>
       
+      {/* Profilo utente */}
       {!collapsed && (
-        <div className="p-4 bg-accent/10">
+        <div className="p-4 bg-secondary/20">
           <div className="flex items-center space-x-2">
-            <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
+            <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary">
               {user?.name.charAt(0)}
             </div>
             <div className="space-y-0.5">
               <p className="text-sm font-medium line-clamp-1">{user?.name}</p>
-              <p className="text-xs text-muted-foreground">{user?.subscriptionId || 'Free'}</p>
+              <p className="text-xs text-muted-foreground">
+                {user?.subscriptionId === 'free' ? 'Piano Free' : user?.subscriptionId || 'Free'}
+              </p>
             </div>
           </div>
         </div>
       )}
       
-      <Separator />
+      <Separator className="my-1" />
       
+      {/* Area Agente e Chat */}
       <ScrollArea className="flex-grow">
         {selectedAgent ? (
           <div className="py-4">
             {!collapsed && (
               <div className="px-4 mb-2">
-                <h3 className="font-medium text-sm text-muted-foreground">AGENT SELEZIONATO</h3>
+                <h3 className="font-medium text-xs text-muted-foreground uppercase tracking-wider">Agent selezionato</h3>
               </div>
             )}
             <div className="px-4 py-2 flex items-center gap-3">
@@ -128,15 +147,35 @@ const Sidebar = () => {
                 </div>
               )}
             </div>
-            <Separator className="my-2" />
-            {!collapsed && <ConversationList />}
+            
+            {!collapsed && (
+              <>
+                <div className="px-4 py-2">
+                  <Button 
+                    onClick={handleNewChat}
+                    className="w-full gap-2 text-sm"
+                    size="sm"
+                    variant="secondary"
+                  >
+                    <Plus size={16} />
+                    <span>Nuova chat</span>
+                  </Button>
+                </div>
+                <Separator className="my-2" />
+                <ConversationList />
+              </>
+            )}
           </div>
         ) : (
           !collapsed ? (
             <AgentList />
           ) : (
             <div className="py-4 flex flex-col items-center space-y-4">
-              <Button variant="ghost" size="icon">
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => window.location.href = '/dashboard/chat'}
+              >
                 <MessageSquare className="h-5 w-5" />
               </Button>
             </div>
@@ -144,8 +183,9 @@ const Sidebar = () => {
         )}
       </ScrollArea>
       
-      <Separator />
+      <Separator className="my-1" />
       
+      {/* Navigazione principale */}
       <nav className="p-2">
         <div className={`flex flex-col ${collapsed ? 'items-center' : ''} space-y-1`}>
           <Link to="/dashboard">

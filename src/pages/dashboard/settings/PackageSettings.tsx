@@ -3,21 +3,22 @@ import React, { useState } from 'react';
 import { usePackage } from '../../../contexts/PackageContext';
 import PackageList from '../../../components/PackageList';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, PackageOpen, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Loader2, PackageOpen, AlertTriangle, RefreshCw, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 const PackageSettings = () => {
-  const { isLoading, error, packages } = usePackage();
+  const { isLoading, error, packages, refetchPackages } = usePackage();
   const [isRetrying, setIsRetrying] = useState(false);
   
   const handleRetry = async () => {
     try {
       setIsRetrying(true);
-      // Trigger the package reload
-      window.location.reload();
+      await refetchPackages();
+      toast.success("Pacchetti ricaricati con successo");
     } catch (error) {
       toast.error("Impossibile ricaricare i pacchetti");
+      console.error("Error refetching packages:", error);
     } finally {
       setIsRetrying(false);
     }
@@ -88,14 +89,17 @@ const PackageSettings = () => {
       <CardContent>
         {renderContent()}
         
-        <div className="mt-8 bg-accent/10 rounded-lg p-6">
+        <div className="mt-8 bg-secondary/40 rounded-lg p-6">
           <h3 className="text-lg font-semibold mb-2">Ti serve aiuto per scegliere?</h3>
           <p className="mb-4">
             Contattaci per una consulenza personalizzata e scopri quale pacchetto è più adatto alle tue esigenze.
           </p>
-          <a href="mailto:sales@ai-platform.example.com" className="text-accent hover:underline">
-            sales@ai-platform.example.com
-          </a>
+          <div className="flex items-center gap-2">
+            <Mail className="h-4 w-4 text-accent" />
+            <a href="mailto:sales@ai-platform.example.com" className="text-accent hover:underline">
+              sales@ai-platform.example.com
+            </a>
+          </div>
         </div>
       </CardContent>
     </Card>

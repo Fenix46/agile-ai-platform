@@ -46,7 +46,7 @@ export default function ChatMessageBubble({
         <div className={cn(
           "rounded-lg px-4 py-2",
           isUser 
-            ? "bg-accent text-accent-foreground rounded-br-none" 
+            ? "bg-primary text-primary-foreground rounded-br-none" 
             : "bg-secondary text-secondary-foreground rounded-bl-none"
         )}>
           <p className="whitespace-pre-wrap">{message.content}</p>

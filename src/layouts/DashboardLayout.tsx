@@ -28,7 +28,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="flex flex-col items-center">
-          <div className="h-16 w-16 animate-spin rounded-full border-4 border-accent border-t-transparent"></div>
+          <div className="h-16 w-16 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
           <p className="mt-4 text-lg">Caricamento...</p>
         </div>
       </div>
@@ -47,10 +47,10 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     <ChatProvider>
       <PackageProvider>
         <div className="flex h-screen overflow-hidden">
-          <div className="ml-64 flex-1 overflow-auto"> {/* Space for persistent sidebar */}
+          <Sidebar />
+          <div className="flex-1 ml-64 overflow-auto"> {/* Space for persistent sidebar */}
             {children}
           </div>
-          <Sidebar />
         </div>
       </PackageProvider>
     </ChatProvider>

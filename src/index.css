@@ -5,83 +5,85 @@
 
 @layer base {
   :root {
-    --background: 220 33% 98%;
-    --foreground: 220 10% 20%;
+    --background: 220 30% 98%;
+    --foreground: 220 12% 20%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 10% 20%;
+    --card-foreground: 220 12% 20%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 10% 20%;
+    --popover-foreground: 220 12% 20%;
 
-    --primary: 230 10% 56%;
+    --primary: 215 12% 50%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 220 14% 94%;
-    --secondary-foreground: 220 10% 30%;
+    --secondary-foreground: 220 12% 30%;
 
     --muted: 220 14% 94%;
-    --muted-foreground: 220 10% 50%;
+    --muted-foreground: 220 12% 50%;
 
-    --accent: 255 100% 65%;
+    /* Manteniamo il viola come accent color */
+    --accent: 255 80% 65%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 70% 60%;
     --destructive-foreground: 0 0% 98%;
 
     --border: 220 14% 90%;
     --input: 220 14% 90%;
-    --ring: 255 100% 65%;
+    --ring: 255 80% 65%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 220 33% 98%;
-    --sidebar-foreground: 220 10% 20%;
-    --sidebar-primary: 230 10% 56%;
+    --sidebar-background: 220 30% 98%;
+    --sidebar-foreground: 220 12% 20%;
+    --sidebar-primary: 215 12% 50%;
     --sidebar-primary-foreground: 0 0% 98%;
     --sidebar-accent: 220 14% 94%;
-    --sidebar-accent-foreground: 220 10% 30%;
+    --sidebar-accent-foreground: 220 12% 30%;
     --sidebar-border: 220 14% 90%;
-    --sidebar-ring: 255 100% 65%;
+    --sidebar-ring: 255 80% 65%;
   }
 
   .dark {
-    --background: 220 20% 12%;
-    --foreground: 220 10% 98%;
+    --background: 220 18% 12%;
+    --foreground: 220 12% 98%;
 
-    --card: 220 20% 14%;
-    --card-foreground: 220 10% 98%;
+    --card: 220 18% 14%;
+    --card-foreground: 220 12% 98%;
 
-    --popover: 220 20% 14%;
-    --popover-foreground: 220 10% 98%;
+    --popover: 220 18% 14%;
+    --popover-foreground: 220 12% 98%;
 
-    --primary: 230 15% 60%;
+    --primary: 215 15% 55%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 220 14% 18%;
-    --secondary-foreground: 220 10% 90%;
+    --secondary-foreground: 220 12% 90%;
 
     --muted: 220 14% 18%;
-    --muted-foreground: 220 10% 70%;
+    --muted-foreground: 220 12% 70%;
 
-    --accent: 255 100% 65%;
+    /* Manteniamo il viola come accent color */
+    --accent: 255 80% 65%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 220 10% 98%;
+    --destructive: 0 60% 40%;
+    --destructive-foreground: 220 12% 98%;
 
     --border: 220 14% 22%;
     --input: 220 14% 22%;
-    --ring: 255 100% 65%;
+    --ring: 255 80% 65%;
     
-    --sidebar-background: 220 20% 10%;
-    --sidebar-foreground: 220 10% 98%;
-    --sidebar-primary: 230 15% 60%;
+    --sidebar-background: 220 18% 10%;
+    --sidebar-foreground: 220 12% 98%;
+    --sidebar-primary: 215 15% 55%;
     --sidebar-primary-foreground: 0 0% 98%;
     --sidebar-accent: 220 14% 18%;
-    --sidebar-accent-foreground: 220 10% 90%;
+    --sidebar-accent-foreground: 220 12% 90%;
     --sidebar-border: 220 14% 22%;
-    --sidebar-ring: 255 100% 65%;
+    --sidebar-ring: 255 80% 65%;
   }
 }
 
@@ -150,11 +152,11 @@
   }
 
   .agent-logo {
-    @apply w-10 h-10 rounded-full object-cover bg-accent/20 flex items-center justify-center overflow-hidden;
+    @apply w-10 h-10 rounded-full object-cover bg-secondary/60 flex items-center justify-center overflow-hidden;
   }
 
   .agent-logo-fallback {
-    @apply text-accent-foreground;
+    @apply text-muted-foreground;
   }
 
   .persistent-sidebar {
@@ -163,5 +165,21 @@
 
   .error-state {
     @apply p-6 rounded-lg border border-destructive/20 bg-destructive/5 flex flex-col items-center text-center;
+  }
+  
+  .package-card {
+    @apply border bg-card rounded-lg shadow-sm transition-all hover:shadow-md;
+  }
+  
+  .package-card-popular {
+    @apply border-accent/30 shadow-md;
+  }
+  
+  .package-features-list {
+    @apply space-y-2 my-4;
+  }
+  
+  .package-feature-item {
+    @apply flex items-center text-sm;
   }
 }
