@@ -8,6 +8,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import AuthForm from '../components/AuthForm';
 import ThemeToggle from '../components/ThemeToggle';
 import AnimatedMotto from '../components/AnimatedMotto';
