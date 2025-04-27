@@ -103,32 +103,45 @@ export const authAPI = {
   signup: async (credentials: SignupCredentials): Promise<{ user: User; token: string }> => {
     try {
       console.log('Sending signup request to /auth/signup');
-      const data = await fetchAPI('/auth/signup', {
+      const user = await fetchAPI('/auth/signup', {
         method: 'POST',
         body: JSON.stringify(credentials),
       });
-      
-      console.log('Signup response received:', data);
-      
-      if (data.access_token) {
-        // FastAPI standard response structure
-        saveToken(data.access_token);
-        return { 
-          user: data.user || { 
-            id: '1', 
-            name: credentials.name, 
+  
+      console.log('Signup response received:', user);
+  
+      // Dopo signup, facciamo login per ottenere il token
+      console.log('Automatically logging in after signup');
+      const loginData = await fetchAPI('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({
+          email: credentials.email,
+          password: credentials.password,
+        }),
+      });
+  
+      console.log('Login response after signup:', loginData);
+  
+      if (loginData.access_token) {
+        saveToken(loginData.access_token);
+        return {
+          user: user || {
+            id: '1',
+            name: credentials.name,
             email: credentials.email,
             role: 'user',
-            subscriptionId: 'free'
+            subscriptionId: 'free',
           },
-          token: data.access_token 
+          token: loginData.access_token,
         };
-      } else if (data.token) {
-        // Alternative response structure
-        saveToken(data.token);
-        return data;
+      } else if (loginData.token) {
+        saveToken(loginData.token);
+        return {
+          user: user,
+          token: loginData.token,
+        };
       } else {
-        throw new Error('Token not found in response');
+        throw new Error('Token not found in login response after signup');
       }
     } catch (error) {
       console.error('Signup API error:', error);
@@ -241,14 +254,15 @@ export const agentsAPI = {
 };
 
 // API per la chat
+// chatAPI.ts
+
 export const chatAPI = {
   getSessions: async (): Promise<ChatSession[]> => {
     try {
       console.log('Fetching chat sessions');
-      // Utilizziamo l'endpoint corretto basato sull'API Python
       const data = await fetchAPI('/chat');
       console.log('Chat sessions data:', data);
-      
+
       return data.map((session: any) => ({
         id: session.id,
         agentId: session.agent_id || session.agentId,
@@ -258,21 +272,21 @@ export const chatAPI = {
       }));
     } catch (error) {
       console.error('Get sessions API error:', error);
-      // Return empty sessions if endpoint not implemented yet
       return [];
     }
   },
-  
+
   createSession: async (agentId: string): Promise<ChatSession> => {
     try {
       console.log(`Creating session for agent ${agentId}`);
-      // Usiamo l'endpoint chat/{agent_slug} come specificato nell'API Python
-      const data = await fetchAPI(`/chat/${agentId}`, {
+
+      const initMessage = "Ciao";
+      const data = await fetchAPI(`/chat/${agentId}?message=${encodeURIComponent(initMessage)}`, {
         method: 'GET',
       });
+
       console.log('Create session response:', data);
-      
-      // Transform the response to match our ChatSession type
+
       return {
         id: data.id || `session-${Math.random().toString(36).substring(2, 9)}`,
         agentId,
@@ -282,7 +296,6 @@ export const chatAPI = {
       };
     } catch (error) {
       console.error('Create session API error:', error);
-      // Fallback to create a local session
       return {
         id: `session-${Math.random().toString(36).substring(2, 9)}`,
         agentId,
@@ -292,24 +305,26 @@ export const chatAPI = {
       };
     }
   },
-  
-  sendMessage: async (sessionId: string, message: string): Promise<Message> => {
+
+  sendMessage: async (session: ChatSession, message: string): Promise<Message> => {
     try {
-      // Estraiamo l'agent_slug dall'ID della sessione
-      const agentSlug = sessionId.split('-')[0]; // Se necessario adattare al formato dell'ID di sessione
-      
+      const agentSlug = session.agentId; // Ora corretto!
+
       console.log(`Sending message to agent ${agentSlug}`);
       const data = await fetchAPI(`/chat/${agentSlug}`, {
         method: 'POST',
-        body: JSON.stringify({ content: message }),
+        body: JSON.stringify({
+          message,
+          stream: false,
+        }),
       });
+
       console.log('Send message response:', data);
-      
-      // Transform the response to match our Message type
+
       return {
         id: data.id || `message-${Math.random().toString(36).substring(2, 9)}`,
         role: 'agent',
-        content: data.content || data.message || `Risposta dal server per: "${message}"`,
+        content: data.response || data.message || `Risposta dal server per: "${message}"`,
         timestamp: new Date(data.timestamp || data.created_at || Date.now()),
       };
     } catch (error) {
@@ -317,51 +332,44 @@ export const chatAPI = {
       throw error;
     }
   },
-  
-  // Implement streaming if your FastAPI supports it
-  streamMessage: (sessionId: string, message: string, onChunk: (chunk: string) => void, onComplete: (message: Message) => void) => {
-    // Estraiamo l'agent_slug dall'ID della sessione
-    const agentSlug = sessionId.split('-')[0]; // Se necessario adattare al formato dell'ID di sessione
-    
+
+  streamMessage: (session: ChatSession, message: string, onChunk: (chunk: string) => void, onComplete: (message: Message) => void) => {
+    const agentSlug = session.agentId; // Ora corretto!
+
     console.log(`Setting up streaming for agent ${agentSlug} with message: ${message}`);
-    
-    // For now, fallback to non-streaming response
+
     const sendNonStreaming = async () => {
       try {
-        const response = await chatAPI.sendMessage(sessionId, message);
-        
-        // Simulate streaming with the complete response
+        const response = await chatAPI.sendMessage(session, message);
+
         const words = response.content.split(' ');
-        
-        let accumulatedContent = '';
         let index = 0;
-        
+
         const interval = setInterval(() => {
           if (index >= words.length) {
             clearInterval(interval);
             onComplete(response);
             return;
           }
-          
-          accumulatedContent += words[index] + ' ';
+
           onChunk(words[index] + ' ');
           index++;
         }, 100);
-        
+
         return () => clearInterval(interval);
       } catch (error) {
         console.error('Non-streaming fallback error:', error);
-        onComplete({
+        const fallbackMessage: Message = {
           id: `message-error-${Date.now()}`,
           role: 'agent',
           content: 'Si è verificato un errore durante l\'elaborazione del messaggio',
           timestamp: new Date(),
-        });
+        };
+        onComplete(fallbackMessage);
         return () => {};
       }
     };
-    
-    // Per ora utilizziamo solo la versione non-streaming come fallback
+
     return sendNonStreaming();
   },
 };

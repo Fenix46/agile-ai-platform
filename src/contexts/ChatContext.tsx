@@ -181,7 +181,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
       // Gestisci lo streaming
       const stopStream = chatAPI.streamMessage(
-        sessionId,
+        session,
         content,
         // On chunk
         (chunk: string) => {
