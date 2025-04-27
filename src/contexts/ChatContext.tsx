@@ -27,6 +27,7 @@ interface ChatContextType extends ChatState {
   agents: Agent[];
   loadingAgents: boolean;
   selectAgent: (agentId: string) => Promise<void>;
+  selectSession: (sessionId: string) => void;
   sendMessage: (content: string) => Promise<void>;
   getCurrentSession: () => ChatSession | null;
 }
@@ -115,6 +116,13 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Error selecting agent:', error);
       toast.error('Impossibile connettersi con l\'agente');
+    }
+  };
+
+  // Seleziona una sessione esistente
+  const selectSession = (sessionId: string) => {
+    if (state.sessions[sessionId]) {
+      setState(prev => ({ ...prev, currentSession: sessionId }));
     }
   };
 
@@ -251,6 +259,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         agents,
         loadingAgents,
         selectAgent,
+        selectSession,
         sendMessage,
         getCurrentSession,
       }}

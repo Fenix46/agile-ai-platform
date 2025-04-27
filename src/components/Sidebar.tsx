@@ -1,15 +1,16 @@
 
-/**
- * Componente per la barra laterale nella dashboard
- * 
- * Contiene il logo, la lista degli agenti e le opzioni di navigazione.
- */
-
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { ChevronLeft, ChevronRight, LayoutDashboard, Settings, LogOut } from 'lucide-react';
+import { 
+  ChevronLeft, 
+  ChevronRight, 
+  LayoutDashboard, 
+  Settings, 
+  LogOut,
+  MessageSquare
+} from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import AgentList from './AgentList';
 import { useAuth } from '../contexts/AuthContext';
@@ -21,7 +22,7 @@ const Sidebar = () => {
   
   // Funzione per verificare se un percorso è attivo
   const isActive = (path: string) => {
-    return location.pathname === path;
+    return location.pathname === path || location.pathname.startsWith(path + '/');
   };
   
   return (
@@ -74,7 +75,7 @@ const Sidebar = () => {
           <div className="py-4 flex flex-col items-center space-y-4">
             {/* Versione compatta della lista agenti */}
             <Button variant="ghost" size="icon">
-              <LayoutDashboard className="h-5 w-5" />
+              <MessageSquare className="h-5 w-5" />
             </Button>
           </div>
         )}
@@ -86,11 +87,20 @@ const Sidebar = () => {
         <div className={`flex flex-col ${collapsed ? 'items-center' : ''} space-y-1`}>
           <Link to="/dashboard">
             <Button
-              variant={isActive("/dashboard") ? "secondary" : "ghost"}
+              variant={isActive("/dashboard") && !isActive("/dashboard/chat") && !isActive("/dashboard/settings") ? "secondary" : "ghost"}
               className={`w-full justify-start ${collapsed ? 'px-2' : ''}`}
             >
               <LayoutDashboard className="h-5 w-5 mr-2" />
               {!collapsed && <span>Dashboard</span>}
+            </Button>
+          </Link>
+          <Link to="/dashboard/chat">
+            <Button
+              variant={isActive("/dashboard/chat") ? "secondary" : "ghost"}
+              className={`w-full justify-start ${collapsed ? 'px-2' : ''}`}
+            >
+              <MessageSquare className="h-5 w-5 mr-2" />
+              {!collapsed && <span>Chat</span>}
             </Button>
           </Link>
           <Link to="/dashboard/settings">

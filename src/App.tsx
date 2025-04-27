@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import SettingsPage from "./pages/dashboard/SettingsPage";
+import ChatDashboard from "./pages/dashboard/ChatDashboard";
 
 // Layouts
 import DashboardLayout from "./layouts/DashboardLayout";
@@ -31,6 +32,12 @@ const App = () => (
             <Route path="/dashboard" element={
               <DashboardLayout>
                 <DashboardPage />
+              </DashboardLayout>
+            } />
+
+            <Route path="/dashboard/chat" element={
+              <DashboardLayout>
+                <ChatDashboard />
               </DashboardLayout>
             } />
             
