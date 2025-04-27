@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -52,12 +53,15 @@ export default {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))'
         },
-        youai: {
-          purple: '#6D3AFF',
-          blue: '#3B82F6',
-          cyan: '#22D3EE',
-          pink: '#EC4899',
-          dark: '#1E1B4B'
+        sidebar: {
+          DEFAULT: 'hsl(var(--sidebar-background))',
+          foreground: 'hsl(var(--sidebar-foreground))',
+          primary: 'hsl(var(--sidebar-primary))',
+          primaryForeground: 'hsl(var(--sidebar-primary-foreground))',
+          accent: 'hsl(var(--sidebar-accent))',
+          accentForeground: 'hsl(var(--sidebar-accent-foreground))',
+          border: 'hsl(var(--sidebar-border))',
+          ring: 'hsl(var(--sidebar-ring))',
         }
       },
       borderRadius: {
@@ -109,6 +113,22 @@ export default {
           '50%': {
             opacity: '0.8'
           }
+        },
+        'slide-in-from-left': {
+          '0%': {
+            transform: 'translateX(-100%)'
+          },
+          '100%': {
+            transform: 'translateX(0)'
+          }
+        },
+        'slide-out-to-left': {
+          '0%': {
+            transform: 'translateX(0)'
+          },
+          '100%': {
+            transform: 'translateX(-100%)'
+          }
         }
       },
       animation: {
@@ -116,7 +136,9 @@ export default {
         'accordion-up': 'accordion-up 0.2s ease-out',
         'fade-in': 'fade-in 0.3s ease-out',
         'fade-out': 'fade-out 0.3s ease-out',
-        'pulse-subtle': 'pulse-subtle 2s ease-in-out infinite'
+        'pulse-subtle': 'pulse-subtle 2s ease-in-out infinite',
+        'slide-in-from-left': 'slide-in-from-left 0.3s ease-out',
+        'slide-out-to-left': 'slide-out-to-left 0.3s ease-out'
       }
     }
   },

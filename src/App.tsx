@@ -11,6 +11,7 @@ import NotFound from "./pages/NotFound";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import SettingsPage from "./pages/dashboard/SettingsPage";
 import ChatDashboard from "./pages/dashboard/ChatDashboard";
+import PackageSettings from "./pages/dashboard/settings/PackageSettings";
 
 // Layouts
 import DashboardLayout from "./layouts/DashboardLayout";
@@ -41,9 +42,15 @@ const App = () => (
               </DashboardLayout>
             } />
             
-            <Route path="/dashboard/settings/*" element={
+            <Route path="/dashboard/settings" element={
               <DashboardLayout>
                 <SettingsPage />
+              </DashboardLayout>
+            } />
+            
+            <Route path="/dashboard/settings/packages" element={
+              <DashboardLayout>
+                <PackageSettings />
               </DashboardLayout>
             } />
             

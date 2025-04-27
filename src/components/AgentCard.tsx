@@ -23,11 +23,14 @@ interface AgentCardProps {
 
 export default function AgentCard({ agent, onSelect, isAvailable = true }: AgentCardProps) {
   return (
-    <Card className="overflow-hidden transition-all duration-300 hover:shadow-md">
+    <Card className="overflow-hidden transition-all duration-300 hover:shadow-md border-2 border-transparent hover:border-accent/20">
       <CardHeader className="pb-2">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-accent flex items-center justify-center">
-            {iconMap[agent.icon] || <MessageSquare className="w-6 h-6" />}
+          <div className="agent-logo">
+            {agent.icon && iconMap[agent.icon] ? 
+              iconMap[agent.icon] : 
+              <MessageSquare className="w-6 h-6 agent-logo-fallback" />
+            }
           </div>
           <div>
             <CardTitle className="text-lg">{agent.name}</CardTitle>
@@ -47,6 +50,7 @@ export default function AgentCard({ agent, onSelect, isAvailable = true }: Agent
           onClick={() => onSelect(agent)} 
           disabled={!isAvailable}
           className="w-full"
+          variant={isAvailable ? "default" : "outline"}
         >
           {isAvailable ? 'Inizia a chattare' : 'Pacchetto richiesto'}
         </Button>

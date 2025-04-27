@@ -3,6 +3,7 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Message } from '@/types';
+import { MessageSquare } from 'lucide-react';
 
 interface ChatMessageBubbleProps {
   message: Message;
@@ -27,12 +28,15 @@ export default function ChatMessageBubble({
       isUser ? "justify-end" : "justify-start"
     )}>
       {!isUser && (
-        <Avatar className="h-8 w-8 shrink-0">
-          {agentAvatar && <AvatarImage src={agentAvatar} alt={agentName || 'Agent'} />}
-          <AvatarFallback className="bg-primary text-primary-foreground">
-            {agentName?.charAt(0) || 'A'}
-          </AvatarFallback>
-        </Avatar>
+        <div className="agent-logo h-8 w-8 shrink-0">
+          {agentAvatar ? (
+            <AvatarImage src={agentAvatar} alt={agentName || 'Agent'} className="object-cover" />
+          ) : (
+            <div className="flex items-center justify-center h-full w-full">
+              <MessageSquare className="h-4 w-4 agent-logo-fallback" />
+            </div>
+          )}
+        </div>
       )}
 
       <div className={cn(
@@ -42,7 +46,7 @@ export default function ChatMessageBubble({
         <div className={cn(
           "rounded-lg px-4 py-2",
           isUser 
-            ? "bg-primary text-primary-foreground rounded-br-none" 
+            ? "bg-accent text-accent-foreground rounded-br-none" 
             : "bg-secondary text-secondary-foreground rounded-bl-none"
         )}>
           <p className="whitespace-pre-wrap">{message.content}</p>
@@ -52,8 +56,7 @@ export default function ChatMessageBubble({
 
       {isUser && (
         <Avatar className="h-8 w-8">
-          <AvatarFallback className="bg-accent text-accent-foreground">
-            {/* Prendiamo la prima lettera dal contesto auth se disponibile, altrimenti "U" per user */}
+          <AvatarFallback className="bg-primary text-primary-foreground">
             U
           </AvatarFallback>
         </Avatar>

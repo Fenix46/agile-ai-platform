@@ -1,17 +1,11 @@
 
-/**
- * Layout per l'area dashboard
- * 
- * Gestisce la struttura comune alle pagine della dashboard e
- * implementa la protezione delle rotte autenticate.
- */
-
 import React, { ReactNode, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ChatProvider } from '../contexts/ChatContext';
 import { PackageProvider } from '../contexts/PackageContext';
 import { toast } from 'sonner';
+import Sidebar from '@/components/Sidebar';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -34,7 +28,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="flex flex-col items-center">
-          <div className="h-16 w-16 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+          <div className="h-16 w-16 animate-spin rounded-full border-4 border-accent border-t-transparent"></div>
           <p className="mt-4 text-lg">Caricamento...</p>
         </div>
       </div>
@@ -52,7 +46,12 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   return (
     <ChatProvider>
       <PackageProvider>
-        {children}
+        <div className="flex h-screen overflow-hidden">
+          <div className="ml-64 flex-1 overflow-auto"> {/* Space for persistent sidebar */}
+            {children}
+          </div>
+          <Sidebar />
+        </div>
       </PackageProvider>
     </ChatProvider>
   );

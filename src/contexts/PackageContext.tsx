@@ -1,10 +1,4 @@
 
-/**
- * Context per la gestione dei pacchetti di abbonamento
- * 
- * Gestisce il recupero dei pacchetti disponibili e le operazioni di sottoscrizione.
- */
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { toast } from 'sonner';
 
@@ -17,7 +11,9 @@ interface PackageContextType {
   packages: Package[];
   currentPackageId: string | null;
   isLoading: boolean;
+  error: Error | null;
   subscribe: (packageId: string) => Promise<void>;
+  refetchPackages: () => Promise<void>;
 }
 
 const PackageContext = createContext<PackageContextType | undefined>(undefined);
@@ -26,25 +22,33 @@ const PackageContext = createContext<PackageContextType | undefined>(undefined);
 export function PackageProvider({ children }: { children: ReactNode }) {
   const [packages, setPackages] = useState<Package[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
   const { user, isAuthenticated } = useAuth();
 
   // Carica i pacchetti disponibili
-  useEffect(() => {
-    const fetchPackages = async () => {
-      try {
-        setIsLoading(true);
-        const fetchedPackages = await packagesAPI.getPackages();
-        setPackages(fetchedPackages);
-      } catch (error) {
-        console.error('Error fetching packages:', error);
-        toast.error('Impossibile caricare i pacchetti disponibili');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const fetchPackages = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const fetchedPackages = await packagesAPI.getPackages();
+      setPackages(fetchedPackages);
+    } catch (error) {
+      console.error('Error fetching packages:', error);
+      setError(error instanceof Error ? error : new Error('Errore sconosciuto'));
+      toast.error('Impossibile caricare i pacchetti disponibili');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchPackages();
   }, []);
+
+  // Funzione per ricaricare i pacchetti
+  const refetchPackages = async () => {
+    await fetchPackages();
+  };
 
   // Funzione per sottoscrivere un pacchetto
   const subscribe = async (packageId: string) => {
@@ -57,6 +61,8 @@ export function PackageProvider({ children }: { children: ReactNode }) {
       setIsLoading(true);
       await packagesAPI.subscribe(packageId);
       toast.success('Abbonamento attivato con successo!');
+      // Aggiorna l'elenco pacchetti dopo la sottoscrizione
+      await fetchPackages();
     } catch (error) {
       console.error('Error subscribing to package:', error);
       toast.error('Errore durante l\'attivazione dell\'abbonamento');
@@ -71,7 +77,9 @@ export function PackageProvider({ children }: { children: ReactNode }) {
         packages,
         currentPackageId: user?.subscriptionId || null,
         isLoading,
+        error,
         subscribe,
+        refetchPackages,
       }}
     >
       {children}
